@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+    <head>
+		<meta charset="UTF-8" />
+		<title>M3U8 Player</title>
+		<link rel="shortcut icon" href="logo.png">
+		
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script type="text/javascript" src="jwplayer.js"></script>
+		<script>jwplayer.key="kmJIvCwVC3gV5pgz23QKNEg657pCvHC/ww/pcX+Zm6U="</script>
+		
+		<script>
+			// English Club (En)   > http://cosmo.divan.tv:8001/secure/mivG_ICs0JAXQ5RyI0tEuQ/1435495360/tv253/d4eb1668aa5c2537e7efb1ef715cd45b/trailer.m3u8
+			// Ukraine Today (En)  > http://cosmo.divan.tv:8001/secure/-NPfSGJbkf-9EMny6Fv9AA/1435496450/tv38/daba153c83335e671a89ccee7f2538b3/trailer.m3u8
+			// Euronews (En)       > http://cosmo.divan.tv:8001/secure/EKejCNX84omlvTYmXYM8Tw/1435500870/tv143/aa001ad18da7704874be000aeac09775/multi.m3u8
+			// BBC World News (En) > http://cosmo.divan.tv:8001/secure/MCOGBTdJTadRKaty4dNB3A/1435517077/tv144/6ea0d1786bdeb2bea5269386949a3008/multi.m3u8
+			// Travel (En)         > http://cosmo.divan.tv:8001/secure/IiDQsaREwa1LIQj-CcwEMg/1435496496/tv69/0f80c6077cb697d05dddf62edb9b8236/trailer.m3u8
+			// Travel (Ru)         > http://cosmo.divan.tv:8001/secure/nV-OKh1Wx7MfKekvN5u5OQ/1435496547/tv79/704967c2535704ca0848bbb550613fbf/trailer.m3u8
+			// Тоніс (Ua)          > http://cosmo.divan.tv:8001/secure/ephAJzxPEgzTK9ZG0kNvYg/1435500904/tv4/2bf99de67c1e5ed8ecc178b940570427/trailer.m3u8
+			// Мега (Ua)           > http://cosmo.divan.tv:8001/secure/xv5oryuoSLo2riUOuLqWxA/1435500938/tv93/499f1fee41566d8fb12c24a87ef73565/trailer.m3u8
+
+			function startPlayer()
+			{
+				var streamPath = document.getElementById('txtStream').value;
+				streamPath = streamPath.replace('trailer.m3u8', 'tv-site.m3u8');
+                streamPath = streamPath.replace('preview.mp4', 'tv-site.m3u8');
+				
+				var playerWidth;
+				var playerHeight;
+				var resolution = document.getElementById("ddlPlayerSize").value;
+				if(resolution == 1) {		// 890x500
+					playerWidth = 890;
+					playerHeight = 500;
+				}
+				else if (resolution == 2) {	// 728x500
+					playerWidth = 728;
+					playerHeight = 500;
+				}
+                else if (resolution == 3) {	// 700x400
+					playerWidth = 700;
+					playerHeight = 400;
+				}
+				else {						//640x360
+					playerWidth = 640;
+					playerHeight = 360;
+				}
+				
+				jwplayer("myElement").setup({
+					controlbar:'bottom',
+					autostart:'true',
+
+					//width:890,
+					//height:500,
+					//width:640,
+					//height:360,
+					width:playerWidth,
+					height:playerHeight,
+
+					// ECTV on divan.tv
+					//file:'http://jabber.divan.tv:8001/tv180/5a366cc9fc5ffcf25f5ab639ce5838ec/tv-site.m3u8',
+					file:streamPath,
+					//image:'http://jabber.divan.tv:8001/tv86/screenshot.jpg',
+
+					// ECTV episodes on english-club.tv
+					//file:'http://vod.english-club.tv:1935/vod/_definst_/multimedia/CulinaryTravels/1.mp4/playlist.m3u8',
+					//file:'http://vod.english-club.tv:1935/vod/_definst_/multimedia/news/1.mp4/playlist.m3u8',
+					image:'empty.png',
+				});
+
+				window.scrollTo(0, 0);
+			}
+
+			var cookieName = 'M3U8player.txtPlaylist=';
+
+			function loadTextHistory() {
+				// Separating txtPlaylist-cookie.
+				var cookie = document.cookie;
+				var pos = cookie.indexOf(cookieName);
+				if(pos >= 0)
+				{
+					var end = cookie.indexOf('; ', pos);
+					if(end > 0)
+						cookie = cookie.substr(pos + cookieName.length, end - pos - cookieName.length);
+					else
+						cookie = cookie.substr(pos + cookieName.length);
+				}
+				else {
+					return;
+				}
+				
+				// Initializing txtStream input.
+				var httpStart = cookie.indexOf('http://');
+				var httpsStart = cookie.indexOf('https://');
+				if(httpsStart >= 0 && httpsStart < httpStart)
+					httpStart = httpsStart;
+				
+				var pos = cookie.indexOf(' ::: ', httpStart);
+				if(httpStart >= 0 && pos >= 0)
+					txtStream.value = cookie.substr(httpStart, pos - httpStart);
+				
+				// Formatting cookie for txtPlaylist
+				var tmp;
+				do {
+					tmp = cookie;
+					cookie = cookie.replace(' ::: ', '\n');
+				} while (tmp != cookie);
+				
+				do {
+					tmp = cookie;
+					cookie = cookie.replace(' :::: ', ';');
+				} while (tmp != cookie);
+				
+				txtPlaylist.value = cookie;
+			}
+
+			function saveTextHistory() {
+				var cookie = txtPlaylist.value;
+				cookie = cookie.trim();
+				
+				var tmp;
+				do {
+					tmp = cookie;
+					cookie = cookie.replace('\n', ' ::: ');
+				} while (tmp != cookie);
+				
+				do {
+					tmp = cookie;
+					cookie = cookie.replace(';', ' :::: ');
+				} while (tmp != cookie);
+				
+				document.cookie = cookieName + cookie + '; path=/; expires=Tue, 19 Jan 2038 03:14:07 GMT';
+			}
+
+			function configureControls() {
+				// txtStream
+				$("#txtStream").keyup(function(event){
+					if(event.keyCode == 13){
+						$("#btnPlay").click();
+					}
+				});
+				
+				//txtPlaylist
+				var enableEditPlaylist = false;
+				var txtPlaylistHeight;
+				const _txtPlaylistEditHeight = 360;
+				$("#btnEnableEdit").click(function(){
+					if(!enableEditPlaylist) {
+						$("#txtPlaylist").removeAttr("readonly");
+						$("#txtPlaylist").focus();
+						txtPlaylistHeight = $("#txtPlaylist").height();
+						if(txtPlaylistHeight < _txtPlaylistEditHeight)
+							$("#txtPlaylist").height(_txtPlaylistEditHeight);
+						
+						$('#btnEnableEdit').val("Save");
+						enableEditPlaylist = true;
+					}
+					else {
+						$("#txtPlaylist").attr("readonly", "readonly");
+						$("#txtPlaylist").height(txtPlaylistHeight);
+						
+						$('#btnEnableEdit').val("Edit playlist");
+						enableEditPlaylist = false;
+					}
+				});
+			}
+		</script>
+
+		<style>
+			body, input, textarea, select {
+				font-family: Consolas,monaco,monospace;
+				font-size: 14px;
+				color: gray;
+				background-color: #101010;
+			}
+			textarea {
+				color: white;
+				background-color: gray;
+			}
+			input[id="txtStream"] {
+				width: 50%;
+			}
+			div {
+				margin-left: auto; /* These 2 values is for arrange jwplayer (object)*/
+				margin-right: auto;
+				text-align: center; /* This is for inputs */
+				padding: 5px;
+			}
+		</style>
+    </head>
+
+    <body>
+		<div id="myElement"><strong>Enter m3u8 stream path and enjoy watching video</strong></div>
+		<div>
+			M3U8 path:
+			<input type="text"
+				id="txtStream" />
+			<span style="padding-left: 5px">Player size:</span>
+			<select id="ddlPlayerSize">
+				<option value="1">890x500</option>
+				<option value="2">728x500</option>
+                <option value="2">700x400</option>
+				<option value="3">640x360</option>
+			</select>
+			<br>
+			<input type="button" id="btnPlay"
+				style="margin: 2px"
+				value='Play'
+				onclick='startPlayer()' />
+			<br>
+		</div>
+		<span style="float: left;">
+			<strong>Playlist</strong> <abbr title="Copy and paste any of the paths into 'M3U8 path' above."><span style="padding-left: 2px; padding-right: 2px">*</span></abbr>
+		</span>
+		<div style="overflow: hidden;">
+			<textarea
+				id="txtPlaylist"
+				style="width: 100%; height: 200px; cursor: default; vertical-align: top"
+				onchange="saveTextHistory()"
+				wrap="off"
+				readonly ></textarea>
+		</div>
+		<input type="button" id="btnEnableEdit" value="Edit playlist" style="border-width: 1px" />
+		<a target="_blank" href="http://localhost:8081/" style="color: gray">Add/update playlist's links (in new window)</a>
+		<script>
+			configureControls();
+			loadTextHistory();
+			window.scrollTo(0, 0);
+		</script>
+    </body>
+</html>
